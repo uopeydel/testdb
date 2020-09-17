@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build 
+
+WORKDIR /app
+EXPOSE 80
+EXPOSE 443
+
+ENV TZ Asia/Bangkok
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update
+RUN apt-get install -y locales
+RUN sed -i -e 's/# th_TH.UTF-8 UTF-8/th_TH.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen 
+     
+COPY [".", "/app/"]    
+WORKDIR /app/FirstCodeDb  
+
+ENV LC_ALL th_TH.UTF-8   
+ENV LANG th_TH.UTF-8   
+
+ENV LANGUAGE th_TH:th 
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
+ENTRYPOINT ["dotnet" , "watch", "run" ,"--urls=http://+:80" , "--configuration" , "Release","--environment=Development"]
